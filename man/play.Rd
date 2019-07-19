@@ -4,7 +4,7 @@
 \alias{play}
 \title{Play the prediction game.}
 \usage{
-play(data, n, guess_1, guess_2)
+play(data, n, guess_1, guess_2, FUN, ...)
 }
 \arguments{
 \item{data}{A numeric vector.}
@@ -14,6 +14,10 @@ play(data, n, guess_1, guess_2)
 \item{guess_1}{A number.}
 
 \item{guess_2}{A number.}
+
+\item{FUN}{A function to apply to data.}
+
+\item{...}{Optional arguments to FUN.}
 }
 \value{
 A tibble with the results of the game.
@@ -22,5 +26,5 @@ A tibble with the results of the game.
 Play the prediction game.
 }
 \examples{
-play(1:10, 5, 3, 7)
+play(data = 1:10, n = 5, 3, 7, sample, size = 1)
 }

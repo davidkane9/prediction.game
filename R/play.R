@@ -4,6 +4,8 @@
 #' @param n The number of times to play the game.
 #' @param guess_1 A number.
 #' @param guess_2 A number.
+#' @param FUN A function to apply to data.
+#' @param ... Optional arguments to FUN.
 #' 
 #' @return A tibble with the results of the game.
 #' 
@@ -13,16 +15,16 @@
 #' @export
 #' 
 #' @examples
-#' play(1:10, 5, 3, 7)
+#' play(data = 1:10, n = 5, 3, 7, sample, size = 1)
 
-play <- function(data, n, guess_1, guess_2){
+play <- function(data, n, guess_1, guess_2, FUN, ...){
   
-  # We need to add an argument which is some function which will be run on data
-  # and produce an answer which can then be compared to guess_1 and guess_2.
-  # Easiest if the function includes the variable names in a simple fashion.
-  # That is, data should be a tibble with x and y or whatever. The function
-  # (FUN) argument would then take something like "mean(x)". This code would be
-  # run as is. 
+  # What is the best way to deal with the specific names of the variables we are
+  # working with? That is, data should be a tibble with x and y and whatever.
+  # But we are just passing in the name of the tibble. We don't mention the
+  # variable names. Right now, the function (FUN) argument is just something
+  # like mean. But we don't know which column in "data" the function "mean"
+  # should be applied to. For now, we just hard code it. Must be a better way!
   
   # We want to allow for more complex functions as well. Example:
   # "median(sample(x, 5, replace = FALSE))". Might be cool if we could allow
@@ -46,7 +48,7 @@ play <- function(data, n, guess_1, guess_2){
   for(i in seq(n)){
     x$guess_1[i] <- guess_1
     x$guess_2[i] <- guess_2
-    x$answer[i] <- sample(data, size = 1)
+    x$answer[i] <- FUN(data, ...)
   }
 
   x <- x %>% 
