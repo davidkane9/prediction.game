@@ -1,13 +1,16 @@
 Package: prediction.game
-Title: What the Package Does (One Line, Title Case)
+Title: Play The Prediction Game
 Version: 0.0.0.9000
 Authors@R: 
-    person(given = "First",
-           family = "Last",
+    person(given = "David",
+           family = "Kane",
            role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
-Description: What the package does (one paragraph).
+           email = "dave.kane@gmail.com",
+           comment = c(ORCID = "0000-0002-6660-3934"))
+Description: This package provides a single function, prediction.game(), which 
+  allows for interactive testing of competing answers to a statistical question.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
+URL: https://github.com/davidkane9/prediction.game
+BugReports: https://github.com/davidkane9/prediction.game/issues
