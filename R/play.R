@@ -17,13 +17,26 @@
 
 play <- function(data, n, guess_1, guess_2){
   
-  # This is just a simple version to fix ideas. Have not that hard about the
-  # next argument, which is some function which will be run on data and produce
-  # an answer which can then be compared to guess_1 and guess_2.
+  # We need to add an argument which is some function which will be run on data
+  # and produce an answer which can then be compared to guess_1 and guess_2.
+  # Easiest if the function includes the variable names in a simple fashion.
+  # That is, data should be a tibble with x and y or whatever. The function
+  # (FUN) argument would then take something like "mean(x)". This code would be
+  # run as is. 
   
-  # For now, hard code take a random sample of the data vector.
+  # We want to allow for more complex functions as well. Example:
+  # "median(sample(x, 5, replace = FALSE))". Might be cool if we could allow
+  # chains. Or mayb anonymous functions are enough?
+
+
+  # For now, hard code take a random sample of the data vector. But next
+  # version, data should be a tibble and then this won't work. And that is OK!
+  # No need to allow someone to pass in a vector. Or maybe they can pass in
+  # anything which works in their function . . .
   
   # For now, do in a loop, but we want this to be purrr at some point.
+  
+  # Need to add some test cases.
   
   x <- tibble::tibble(.rows = n) %>% 
     tibble::add_column("guess_1" = NA_real_, 
@@ -45,7 +58,9 @@ play <- function(data, n, guess_1, guess_2){
   
   # Output will be a tibble with n rows, one for each run of the experiment.
   # Plan is to pass that tibble on to a new function, using nice Tidyverse
-  # chaining, which will display the result in some pleasing fashion.
+  # chaining, which will display the result in some pleasing fashion. Check out
+  # the d3rain package. A dual column histogram that fills over time would be
+  # cool!
   
   x
 }
