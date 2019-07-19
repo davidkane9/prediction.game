@@ -7,10 +7,15 @@ Authors@R:
            role = c("aut", "cre"),
            email = "dave.kane@gmail.com",
            comment = c(ORCID = "0000-0002-6660-3934"))
-Description: This package provides a single function, prediction.game(), which 
+Description: This package provides a single function, play(), which 
   allows for interactive testing of competing answers to a statistical question.
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 URL: https://github.com/davidkane9/prediction.game
 BugReports: https://github.com/davidkane9/prediction.game/issues
+RoxygenNote: 6.1.1
+Imports: 
+    magrittr,
+    dplyr,
+    tibble
