@@ -38,6 +38,9 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
   
   # For now, do in a loop, but we want this to be purrr at some point.
   
+  # Maybe this should be a Shiny app? Would then need to pre-load all the data
+  # sets we care about.
+  
   # Need to add some test cases.
   
   x <- tibble::tibble(.rows = n) %>% 

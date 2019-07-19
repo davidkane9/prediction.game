@@ -20,9 +20,18 @@ devtools::install_github("davidkane9/prediction.game")
 Example
 -------
 
-This is a basic example which shows you how to solve a common problem:
+This is a basic example:
 
 ``` r
 library(prediction.game)
-## basic example code
+
+play(data = 1:10, n = 5, 3, 7, sample, size = 1)
+#> # A tibble: 5 x 4
+#>   guess_1 guess_2 answer winner 
+#>     <dbl>   <dbl>  <dbl> <chr>  
+#> 1       3       7      8 guess_2
+#> 2       3       7      1 guess_1
+#> 3       3       7      1 guess_1
+#> 4       3       7      4 guess_1
+#> 5       3       7      7 guess_2
 ```

@@ -29,10 +29,11 @@ devtools::install_github("davidkane9/prediction.game")
 ```
 ## Example
 
-This is a basic example which shows you how to solve a common problem:
+This is a basic example:
 
 ```{r example}
 library(prediction.game)
-## basic example code
+
+play(data = 1:10, n = 5, 3, 7, sample, size = 1)
 ```
 
