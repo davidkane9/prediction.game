@@ -12,6 +12,8 @@
 #' @importFrom dplyr mutate
 #' @importFrom dplyr case_when
 #' @importFrom purrr map_dbl
+#' @importFrom purrr rerun
+#' @importFrom rlang is_scalar_double
 #' 
 #' @export
 #' 
@@ -20,36 +22,46 @@
 
 play <- function(data, n, guess_1, guess_2, FUN, ...){
   
-  # Need more argument error checking.
+  # Need more argument error checking and at least a few test cases.
   
-  stopifnot(is_scalar_integer(n))
+  stopifnot(is_scalar_double(n))
   
-  # What is the best way to deal with the specific names of the variables we are
+  # The biggest problem we face is a desire to allow the user to specify complex
+  # functions like "median(sample(data$x, 5, replace = FALSE))". This is tricky
+  # for two reasons.
+  
+  # First, how do we deal with the specific names of the variables we are
   # working with? That is, data should be a tibble with x and y and whatever.
   # But we are just passing in the name of the tibble. We don't mention the
   # variable names. Right now, the function (FUN) argument is just something
-  # like mean. But we don't know which column in "data" the function "mean"
-  # should be applied to. For now, we just hard code it. Must be a better way!
+  # like sample(). But we don't know which column in "data" the function
+  # "sample" should be applied to. For now, we just hard code it. Must be a
+  # better way!
   
-  # We want to allow for more complex functions as well. Example:
-  # "median(sample(x, 5, replace = FALSE))". Might be cool if we could allow
-  # chains. Or mayb anonymous functions are enough?
-
-
-  # For now, hard code take a random sample of the data vector. But next
-  # version, data should be a tibble and then this won't work. And that is OK!
-  # No need to allow someone to pass in a vector. Or maybe they can pass in
-  # anything which works in their function . . .
+  # Second, how to handle complex functions, especially ones that take
+  # arguments. Right now, we use ... which works fine in these simple cases. But
+  # I am not sure that this scales to more complex situations. In particular, I
+  # would like FUN to be able to be a pipe . . .
   
-  # For now, do in a loop, but we want this to be purrr at some point.
+  # For now, as long as data is a vector and FUN works on vectors, everything
+  # should work as advertized. Then, of course, data should be renamed x.
+
+  # For now, data must be a vector. But next version, data should be (or at
+  # least allowed to be) a tibble and then this won't work (unless we check for
+  # the two cases explicitly). And that is OK! Probably no need to allow someone
+  # to pass in a vector. Or maybe they can pass in anything which works in their
+  # function . . . 
+  
+  # Or maybe we should not have a separate data argument. Instead, we know that
+  # the data will exist when they run play(). Will play() find it if we should
+  # allow them to pass in a full expression like median(data$x)?
   
   # Maybe this should be a Shiny app? Would then need to pre-load all the data
   # sets we care about.
   
-  # Need to add some test cases.
-  
   # We should not need to calculate an empty tibble at the start. Instead, we
-  # should be using map_df() which will produce a tibble automatically.
+  # should be using map_df() (or something like it) which will produce a tibble
+  # automatically.
   
   x <- tibble::tibble(.rows = n) %>% 
     tibble::add_column("guess_1" = NA_real_, 
@@ -60,11 +72,12 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
     mutate(guess_1 = {{guess_1}},
            guess_2 = {{guess_2}}) %>% 
     
-    # This works, but it is obviously crazy to create n copies of data. I think
-    # that replicate() is really what we want. But how to create the expression
-    # that it requires? Maybe just pass it in?
+    # This works, but I am not convinced it is best. First, should I be using
+    # flatten() instead of unlist. Second, rerun() is listed as being in the
+    # "questioning lifecycle stage." Why use something that R is not committed
+    # to?
     
-    mutate(answer = map_dbl(rep(list({{data}}), {{n}}), FUN, ...)) %>% 
+    mutate(answer = unlist(rerun(.n = {{n}}, FUN({{data}}, ...)))) %>% 
     
     mutate(winner = case_when(
        abs(guess_1 - answer) <  abs(guess_2 - answer) ~ "guess_1",
@@ -75,8 +88,11 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
   # Output will be a tibble with n rows, one for each run of the experiment.
   # Plan is to pass that tibble on to a new function, using nice Tidyverse
   # chaining, which will display the result in some pleasing fashion. Check out
-  # the d3rain package. A dual column histogram that fills over time would be
-  # cool!
+  # the d3rain package. Maybe the argument will be called show()? A dual column
+  # histogram that fills over time would be cool!
+  
+  # Do we really need entire columns with guess_1 and guess_2 repeated n times?
+  # Probably not!
   
   x
 }

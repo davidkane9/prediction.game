@@ -19,4 +19,5 @@ Imports:
     magrittr,
     dplyr,
     purrr,
+    rlang,
     tibble
