@@ -49,13 +49,13 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
                        "answer" = NA_real_)
   
   for(i in seq(n)){
-    x$guess_1[i] <- guess_1
-    x$guess_2[i] <- guess_2
     x$answer[i] <- FUN(data, ...)
   }
 
   x <- x %>% 
-     mutate(winner = case_when(
+    mutate(guess_1 = {{guess_1}},
+           guess_2 = {{guess_2}}) %>% 
+    mutate(winner = case_when(
        abs(guess_1 - answer) <  abs(guess_2 - answer) ~ "guess_1",
        abs(guess_1 - answer) >  abs(guess_2 - answer) ~ "guess_2",
        abs(guess_1 - answer) == abs(guess_2 - answer) ~ "tie"))
