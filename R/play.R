@@ -20,6 +20,10 @@
 
 play <- function(data, n, guess_1, guess_2, FUN, ...){
   
+  # Need more argument error checking.
+  
+  stopifnot(is_scalar_integer(n))
+  
   # What is the best way to deal with the specific names of the variables we are
   # working with? That is, data should be a tibble with x and y and whatever.
   # But we are just passing in the name of the tibble. We don't mention the
@@ -55,6 +59,10 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
   x <- x %>% 
     mutate(guess_1 = {{guess_1}},
            guess_2 = {{guess_2}}) %>% 
+    
+    # This works, but it is obviously crazy to create n copies of data. I think
+    # that replicate() is really what we want. But how to create the expression
+    # that it requires? Maybe just pass it in?
     
     mutate(answer = map_dbl(rep(list({{data}}), {{n}}), FUN, ...)) %>% 
     
