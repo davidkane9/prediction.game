@@ -11,6 +11,7 @@
 #' 
 #' @importFrom dplyr mutate
 #' @importFrom dplyr case_when
+#' @importFrom purrr map_dbl
 #' 
 #' @export
 #' 
@@ -43,18 +44,20 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
   
   # Need to add some test cases.
   
+  # We should not need to calculate an empty tibble at the start. Instead, we
+  # should be using map_df() which will produce a tibble automatically.
+  
   x <- tibble::tibble(.rows = n) %>% 
     tibble::add_column("guess_1" = NA_real_, 
                        "guess_2" = NA_real_, 
                        "answer" = NA_real_)
   
-  for(i in seq(n)){
-    x$answer[i] <- FUN(data, ...)
-  }
-
   x <- x %>% 
     mutate(guess_1 = {{guess_1}},
            guess_2 = {{guess_2}}) %>% 
+    
+    mutate(answer = map_dbl(rep(list({{data}}), {{n}}), FUN, ...)) %>% 
+    
     mutate(winner = case_when(
        abs(guess_1 - answer) <  abs(guess_2 - answer) ~ "guess_1",
        abs(guess_1 - answer) >  abs(guess_2 - answer) ~ "guess_2",
