@@ -87,7 +87,7 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
     # I want something like map_dbl(1:{{n}}, ~ FUN({{data}}, ...)) to work in
     # the next line. But I can't quite figure out why . . .
     
-    mutate(answer = unlist(rerun(.n = {{n}}, FUN({{data}}, ...)))) %>% 
+    mutate(answer = unlist(rerun(.n = {{n}}, FUN(data, ...)))) %>% 
   
     mutate(winner = case_when(
        abs(guess_1 - answer) <  abs(guess_2 - answer) ~ "guess_1",
