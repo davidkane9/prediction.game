@@ -84,6 +84,9 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
     # "questioning lifecycle stage." Why use something that R is not committed
     # to?
     
+    # I want something like map_dbl(1:{{n}}, ~ FUN({{data}}, ...)) to work in
+    # the next line. But I can't quite figure out why . . .
+    
     mutate(answer = unlist(rerun(.n = {{n}}, FUN({{data}}, ...)))) %>% 
   
     mutate(winner = case_when(
