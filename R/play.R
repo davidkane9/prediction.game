@@ -32,11 +32,10 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
   
   # First, how do we deal with the specific names of the variables we are
   # working with? That is, data should be a tibble with x and y and whatever.
-  # But we are just passing in the name of the tibble. We don't mention the
-  # variable names. Right now, the function (FUN) argument is just something
-  # like sample(). But we don't know which column in "data" the function
-  # "sample" should be applied to. For now, we just hard code it. Must be a
-  # better way!
+  # But, right now, we are just passing in the name of the tibble. We don't
+  # mention the variable names. The function (FUN) argument is just something
+  # like sample. But we don't know which column in "data" the function "sample"
+  # should be applied to. For now, we just hard code it. Must be a better way!
   
   # Second, how to handle complex functions, especially ones that take
   # arguments. Right now, we use ... which works fine in these simple cases. But
@@ -46,15 +45,23 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
   # For now, as long as data is a vector and FUN works on vectors, everything
   # should work as advertized. Then, of course, data should be renamed x.
 
-  # For now, data must be a vector. But next version, data should be (or at
-  # least allowed to be) a tibble and then this won't work (unless we check for
-  # the two cases explicitly). And that is OK! Probably no need to allow someone
-  # to pass in a vector. Or maybe they can pass in anything which works in their
-  # function . . . 
+  # Next version, data should be (or at least allowed to be) a tibble and then
+  # this won't work (unless we check for the two cases explicitly). And that is
+  # OK! Probably no need to allow someone to pass in a vector. Or maybe they can
+  # pass in anything which works in their function . . .
   
   # Or maybe we should not have a separate data argument. Instead, we know that
-  # the data will exist when they run play(). Will play() find it if we should
-  # allow them to pass in a full expression like median(data$x)?
+  # the data will exist in the environment when they run play(). Will play()
+  # find it if we allow them to pass in a full expression like median(data$x)?
+  # That would be hacky, but, perhaps, easy. 
+  
+  # Alas, although it "works" in that the function can find that data, it seems
+  # like, each time it does, the random seed gets reset (because you are
+  # "jumping" out of the functions environment?) and, so, you get the same
+  # sample each time. So, I think we have to pass the data in somehow.
+  
+  # Something like map_dbl(1:{{n}}, ~ FUN) seens to work OK, but we need a way
+  # for FUN to refer to stuff in the local environment only.
   
   # Maybe this should be a Shiny app? Would then need to pre-load all the data
   # sets we care about.
@@ -78,7 +85,7 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
     # to?
     
     mutate(answer = unlist(rerun(.n = {{n}}, FUN({{data}}, ...)))) %>% 
-    
+  
     mutate(winner = case_when(
        abs(guess_1 - answer) <  abs(guess_2 - answer) ~ "guess_1",
        abs(guess_1 - answer) >  abs(guess_2 - answer) ~ "guess_2",
