@@ -25,7 +25,8 @@ Play the prediction game.
 \examples{
 z <- play(n = 5, guess_1 = 3, guess_2 = 7, ~ sample(x = 1:10, size = 1))
 z
-z <- play(n = 500, guess_1 = 20.09, guess_2 = 21, 
+
+z <- play(n = 500, guess_1 = 20.09, guess_2 = 20.07, 
           ~ mean(sample(mtcars$mpg, size = 10, replace = FALSE)))
 table(z$winner)
 }
