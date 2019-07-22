@@ -19,105 +19,11 @@
 #' @examples
 #' play(n = 5, guess_1 = 3, guess_2 = 7, ~ sample(x = 1:10, size = 1))
 
-# Big picture: I want to pass in functions like "median(sample(tbl$x, 5, replace
-# = FALSE))" where the tibble tbl could also be passed in or could, instead,
-# just be floating around in the global environment.
-
-# Maybe the trick is to pass them in as formula objects by simply putting a ~ in
-# front? Eureka!
-
-# > my_func <- function(FUN){map_dbl(.x = 1:5, .f = FUN)}
-# > my_func(~ runif(1))
-# [1] 0.3231914 0.3751303 0.7335148 0.1857348 0.2345344
-
-# The problem, as Cassandra points out, is that R evaluates the arguments to
-# functions immediately. So, right away, that function is run and the answer,
-# 16, is produced. Then, 16 is copied 1,000 times when we try to run our
-# experiment 1,000 times.
-
-# We are able to avoid this currently because, instead of passing in the full
-# function call, we pass in the name of the function and the arguments
-# separately. So, R can't evaluate them until we are in the middle of running
-# the 1,000 experiments, when we combine FUN(data, ...) and so on. This is not a
-# bad approach, but it also is not as flexible as I want it to be. (But
-# continuing down this path may be the best approach.)
-
-# The other approach is to delay the evaluation of the full call somehow. I
-# don't want it to run until we are within replicate(). But I can't figure out
-# how.
-
-# Not sure if this is helpful:
-
-# Quote from here: https://adv-r.hadley.nz/functionals.html#passing-arguments
-
-# Note there’s a subtle difference between placing extra arguments inside an
-# anonymous function compared with passing them to map(). Putting them in an
-# anonymous function means that they will be evaluated every time f() is
-# executed, not just once when you call map(). This is easiest to see if we
-# make the additional argument random:
-#
-# plus <- function(x, y) x + y
-#
-# x <- c(0, 0, 0, 0) map_dbl(x, plus, runif(1)) 
-# > [1] 0.0625 0.0625 0.0625
-# 0.0625 map_dbl(x, ~ plus(.x, runif(1))) 
-# > [1] 0.903 0.132 0.629 0.945
-
-# That is fine. But, again, once I try to put this in a function with a FUN
-# argument and then pass in runif(1), it does not work.
-
-# Maybe something like:
-
-# my.call <- call("sample", x = c(1:10), size = 1); replicate(2, eval(my.call))
-
-# is what we need. Use call() and the ... arguments to build a function call.
-# This is held fixed until we get down to the replicate() function and, at that
-# point, it is run 1,000 times. I can't get this to work within map_dbl, but
-# maybe replicate(), as above, is fine.
-
 play <- function(n, guess_1, guess_2, FUN){
   
   # Need more argument error checking and at least a few test cases.
   
   stopifnot(is_scalar_double(n))
-  
-  # The biggest problem we face is a desire to allow the user to specify complex
-  # functions like "median(sample(data$x, 5, replace = FALSE))". This is tricky
-  # for two reasons.
-  
-  # First, how do we deal with the specific names of the variables we are
-  # working with? That is, data should be a tibble with x and y and whatever.
-  # But, right now, we are just passing in the name of the tibble (or, actually,
-  # vector right now). We don't mention the variable names. The function (FUN)
-  # argument is just something like sample. But we don't know which column in
-  # "data" the function "sample" should be applied to. For now, only allow you
-  # to pass in a vector. Must be a better way!
-  
-  # Second, how to handle complex functions, especially ones that take
-  # arguments. Right now, we use ... which works fine in these simple cases. But
-  # I am not sure that this scales to more complex situations. In particular, I
-  # would like FUN to be able to be a chain of pipes . . .
-  
-  # For now, as long as data is a vector and FUN works on vectors, everything
-  # should work as advertised. Of course, then, for Tidyverse standards, data
-  # (since it is a vector) should be renamed x.
-
-  # Next version, data should be (or at least allowed to be) a tibble and then
-  # this won't work (unless we check for the two cases explicitly). And that is
-  # OK! Probably no need to allow someone to pass in a vector. Or maybe they can
-  # pass in anything which works in their function . . .
-  
-  # Perhaps a reasonable next step would be to pass in two arguments, a tibble
-  # tb and a variable x. Then, FUN will act on that vector. Might using that
-  # help ensure that the function is not evaluated until we are in replicate()?
-  
-  # Or maybe we should not even have a separate data argument. Instead, we know
-  # that the data will exist in the environment when they run play(). Will
-  # play() find it if we allow them to pass in a full expression like
-  # median(data$x)? That would be hacky, but, perhaps, easy.
-  
-  # But then we would still have the problem of R wanting to evaluate it
-  # immediately. So, maybe that is a fundamentaly flawed approach?
   
   # Maybe this should be a Shiny app? Would then need to pre-load all the data
   # sets we care about.
@@ -134,20 +40,10 @@ play <- function(n, guess_1, guess_2, FUN){
   x <- x %>% 
     mutate(guess_1 = {{guess_1}},
            guess_2 = {{guess_2}}) %>% 
-    
-    # This works, but I am not convinced it is best. First, should I be using
-    # flatten() instead of unlist. Second, rerun() is listed as being in the
-    # "questioning lifecycle stage." Why use something that R is not committed
-    # to?
-    
-    # I want something like map_dbl(1:{{n}}, ~ FUN({{data}}, ...)) to work in
-    # the next line. But I can't quite figure out why . . .
-    
-    # See above for the call() approach. I think that this is a good approach.
   
-    # I think that this section is key:
-  
-    # https://cran.r-project.org/web/packages/lazyeval/vignettes/lazyeval.html
+    # This won't work if you don't pass in the FUN as starting with a ~. In
+    # other words, it needs to be passed in as a formula so that it won't
+    # immediately be evaluated.
     
     mutate(answer = map_dbl(.x = 1:{{n}}, .f = FUN)) %>% 
     
