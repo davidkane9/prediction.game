@@ -17,7 +17,12 @@
 #' @export
 #'
 #' @examples
-#' play(n = 5, guess_1 = 3, guess_2 = 7, ~ sample(x = 1:10, size = 1))
+#' z <- play(n = 5, guess_1 = 3, guess_2 = 7, ~ sample(x = 1:10, size = 1))
+#' z
+#' z <- play(n = 500, guess_1 = 20.09, guess_2 = 21, 
+#'           ~ mean(sample(mtcars$mpg, size = 10, replace = FALSE)))
+#' table(z$winner)
+
 
 play <- function(n, guess_1, guess_2, formula){
   
@@ -62,5 +67,5 @@ play <- function(n, guess_1, guess_2, formula){
   # Do we really need entire columns with guess_1 and guess_2 repeated n times?
   # Probably not!
   
-  x
+  invisible(x)
 }
