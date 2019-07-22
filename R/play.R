@@ -1,24 +1,23 @@
 #' Play the prediction game.
-#' 
-#' @param data A numeric vector.
+#'
 #' @param n The number of times to play the game.
 #' @param guess_1 A number.
 #' @param guess_2 A number.
-#' @param FUN A function to apply to data.
-#' @param ... Optional arguments to FUN.
-#' 
+#' @param FUN A formula to apply to data. Must begin with ~ and may include
+#'   references to data that are in the global workspace.
+#'
 #' @return A tibble with the results of the game.
-#' 
+#'
 #' @importFrom dplyr mutate
 #' @importFrom dplyr case_when
 #' @importFrom purrr map_dbl
 #' @importFrom purrr rerun
 #' @importFrom rlang is_scalar_double
-#' 
+#'
 #' @export
-#' 
+#'
 #' @examples
-#' play(data = 1:10, n = 5, 3, 7, sample, size = 1)
+#' play(n = 5, guess_1 = 3, guess_2 = 7, ~ sample(x = 1:10, size = 1))
 
 # Big picture: I want to pass in functions like "median(sample(tbl$x, 5, replace
 # = FALSE))" where the tibble tbl could also be passed in or could, instead,
@@ -76,7 +75,7 @@
 # point, it is run 1,000 times. I can't get this to work within map_dbl, but
 # maybe replicate(), as above, is fine.
 
-play <- function(data, n, guess_1, guess_2, FUN, ...){
+play <- function(n, guess_1, guess_2, FUN){
   
   # Need more argument error checking and at least a few test cases.
   
@@ -150,7 +149,7 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
   
     # https://cran.r-project.org/web/packages/lazyeval/vignettes/lazyeval.html
     
-    mutate(answer = unlist(rerun(.n = {{n}}, FUN(data, ...)))) %>% 
+    mutate(answer = map_dbl(.x = 1:{{n}}, .f = FUN)) %>% 
     
     mutate(winner = case_when(
        abs(guess_1 - answer) <  abs(guess_2 - answer) ~ "guess_1",
