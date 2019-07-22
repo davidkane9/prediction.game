@@ -17,6 +17,12 @@ knitr::opts_chunk$set(
 
 The purpose of this vignette is to provide an overview of the **prediction.game** package. I will also intersperse notes about future plans, for the reference of both potential collaborators and myself.
 
+The only function is *play()* which allows for playing of the "prediction game," especially in class. Imagine that we are having a contest to determine who can come up with a number which is closest to a random draw from the *mpg* variable in the *mtcars* data frame. (There are `r length(mtcars$mpg)`  values for *mpg*, with a mean of `r round(mean(mtcars$mpg), 2)`.) 
+
 ```{r setup}
+#suppressMessages(library(tidyverse))
 library(prediction.game)
+
+play(n = 1000, guess_1 = 20.09, guess_2 = 19, formula = ~ sample(mtcars$mpg, size = 1)) # %>% 
+  #count(winner)
 ```
