@@ -26,3 +26,13 @@ library(prediction.game)
 play(n = 1000, guess_1 = 20.09, guess_2 = 19, formula = ~ sample(mtcars$mpg, size = 1)) %>% 
   count(winner)
 ```
+
+You might think that the mean should win more contests than some other number but, as you can see above, 19 is a "better" guess, meaning that it wins more contests. The "trick" is that *mpg* has a right skew, with a median, at `r median(mtcars$mpg)`, lower than the mean. And, for getting closest to a random draw from a distribution, the median is better than the mean, when the two differ.
+
+At the other extreme, we can "sample" the entire distribution.
+
+```{r}
+play(n = 1000, guess_1 = 20.09, guess_2 = 19, formula = ~ sample(mtcars$mpg, size = 1)) %>% 
+  count(winner)
+```
+
