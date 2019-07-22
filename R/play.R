@@ -20,10 +20,23 @@
 #' @examples
 #' play(data = 1:10, n = 5, 3, 7, sample, size = 1)
 
-# Big picture: I want to pass in functions like "median(sample(data$x, 5,
-# replace = FALSE))". Can't figure out how! Happy to have weird syntax for
-# accessing the data which is passed in. Or happy to hack this by just assuming
-# that the data exists in the environment and is not actually passed in.
+# Big picture: I want to pass in functions like "median(sample(tbl$x, 5, replace
+# = FALSE))" where the tibble tbl could also be passed in or could, instead,
+# just be floating around in the global environment.
+
+# The problem is that R evaluates the arguments to functions immediately. So,
+# right away, that function is run and the answer, 16, is produced. Then, 16 is
+# copied 1,000 times when we try to run our experiment 1,000 times.
+
+# We are able to avoid this currently because, instead of passing in the full
+# function call, we pass in the name of the function and the arguments
+# separately. So, R can't evaluate them until we are in the middle of running
+# the 1,000 experiments. This is not a bad approach, but it also is not as
+# flexible as I want it to be. (But continuing on this path may be the best
+# approach.)
+
+# The other approach is to delay the evaluation of the full call somehow. But I
+# can't figure out how.
 
 # Here are some notes on our current problem. First, consider some quotes from
 # Advanced R:
@@ -68,6 +81,32 @@
 # is that the presence of the data argument forces R to "notify" itself that it
 # is making a call --- to sample() in the case of the current code --- which then
 # causes the random seed to evolve, which leads to 5 different answers.
+
+# More comments:
+
+# Quote from here: https://adv-r.hadley.nz/functionals.html#passing-arguments
+
+# Note there’s a subtle difference between placing extra arguments inside an
+# anonymous function compared with passing them to map(). Putting them in an
+# anonymous function means that they will be evaluated every time f() is
+# executed, not just once when you call map(). This is easiest to see if we
+# make the additional argument random:
+#
+# plus <- function(x, y) x + y
+#
+# x <- c(0, 0, 0, 0) map_dbl(x, plus, runif(1)) 
+# > [1] 0.0625 0.0625 0.0625
+# 0.0625 map_dbl(x, ~ plus(.x, runif(1))) 
+# > [1] 0.903 0.132 0.629 0.945
+
+# That is fine. But, again, once I try to put this in a function with a FUN
+# argument and then pass in runif(1), it does not work. 
+
+# Cassandra's insight is that, as soon as you call the function --- or as soon
+# as it gets to FUN and tries to stick the function in there --- it evaluates
+# the function, gets back the value 0.2, and then just sticks that value in the
+# code. Something like ~ 0.2 just gives you back 0.2. So, we need to delay the
+# evaluation of the function call that we are passing in.
 
 play <- function(data, n, guess_1, guess_2, FUN, ...){
   
@@ -141,6 +180,15 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
     
     # I want something like map_dbl(1:{{n}}, ~ FUN({{data}}, ...)) to work in
     # the next line. But I can't quite figure out why . . .
+    
+    # Maybe call() is what I need? Treat the FUN which is passed in (and the
+    # dot, dot, dot arguments) as something which needs to be turned into a call
+    # object. Then, we can evaluate that call object within rerun or map_dbl or
+    # whatever.
+  
+    # I think that this section is key:
+  
+    # https://cran.r-project.org/web/packages/lazyeval/vignettes/lazyeval.html
     
     mutate(answer = unlist(rerun(.n = {{n}}, FUN(data, ...)))) %>% 
     
