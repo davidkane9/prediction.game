@@ -1,0 +1,22 @@
+---
+title: "Overview of the prediction.game Package"
+output: rmarkdown::html_vignette
+author: "David Kane"
+vignette: >
+  %\VignetteIndexEntry{Overview of the prediction.game Package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+The purpose of this vignette is to provide an overview of the **prediction.game** package. I will also intersperse notes about future plans, for the reference of both potential collaborators and myself.
+
+```{r setup}
+library(prediction.game)
+```
