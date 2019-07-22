@@ -29,10 +29,22 @@
 # But not quite! A lower number is better because there is a bit of a right skew
 # to mpg, resulting in the median being lower than the mean. But the simple
 # median is not the best guess either. Best is a number somewhere in between the
-# mean and the median. Tricky!
+# mean and the median. Tricky! Presumably, if size were 1, then the median would
+# be best and if size were 32 (entire data set), then the mean would be best . .
+# .
 
-# Next step. Need a function, show(), which takes, via %>%, the result of play()
-# and creates a cool animation using d3rain.
+# Need a vignette. Need a function, show(), which takes, via %>%, the result of
+# play() and creates a cool animation using d3rain.
+
+# Should we connect all this to bootstrapping? What we have, implicitly (?), is
+# a competition over sort-of bootstraped samples . . .
+
+# Should we connect all this to the concept to cross-validation? That is, the
+# same (sort of?) framework as what we have here --- lots of experiments, each
+# using a different sample of the data --- is like cross-validation. Instead of
+# taking a sample, you divude the data into 10 sets training and test data, run
+# the two competing processes each on the training, and then compare how they do
+# on the test.
 
 # Issue 1: Need to be able to run contests in which the formula does not produce
 # a single number. Or do we? Hmmm. 
@@ -55,8 +67,7 @@
 # want. But, at that point, your guess is just as number, as is mine, and we are
 # going to see who wins. Any randomness comes from the formula. 
 
-# I guess that this is, implicitly (?), a competition over sort-of bootstraped
-# samples . . .
+
 
 play <- function(n, guess_1, guess_2, formula){
   
