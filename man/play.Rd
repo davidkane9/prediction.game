@@ -4,7 +4,7 @@
 \alias{play}
 \title{Play the prediction game.}
 \usage{
-play(n, guess_1, guess_2, FUN)
+play(n, guess_1, guess_2, formula)
 }
 \arguments{
 \item{n}{The number of times to play the game.}
@@ -13,7 +13,7 @@ play(n, guess_1, guess_2, FUN)
 
 \item{guess_2}{A number.}
 
-\item{FUN}{A formula to apply to data. Must begin with ~ and may include
+\item{formula}{A formula to apply to data. Must begin with ~ and may include
 references to data that are in the global workspace.}
 }
 \value{

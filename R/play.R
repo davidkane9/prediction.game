@@ -3,7 +3,7 @@
 #' @param n The number of times to play the game.
 #' @param guess_1 A number.
 #' @param guess_2 A number.
-#' @param FUN A formula to apply to data. Must begin with ~ and may include
+#' @param formula A formula to apply to data. Must begin with ~ and may include
 #'   references to data that are in the global workspace.
 #'
 #' @return A tibble with the results of the game.
@@ -19,7 +19,7 @@
 #' @examples
 #' play(n = 5, guess_1 = 3, guess_2 = 7, ~ sample(x = 1:10, size = 1))
 
-play <- function(n, guess_1, guess_2, FUN){
+play <- function(n, guess_1, guess_2, formula){
   
   # Need more argument error checking and at least a few test cases.
   
@@ -45,7 +45,7 @@ play <- function(n, guess_1, guess_2, FUN){
     # other words, it needs to be passed in as a formula so that it won't
     # immediately be evaluated.
     
-    mutate(answer = map_dbl(.x = 1:{{n}}, .f = FUN)) %>% 
+    mutate(answer = map_dbl(.x = 1:{{n}}, .f = formula)) %>% 
     
     mutate(winner = case_when(
        abs(guess_1 - answer) <  abs(guess_2 - answer) ~ "guess_1",
