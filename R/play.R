@@ -24,65 +24,23 @@
 # = FALSE))" where the tibble tbl could also be passed in or could, instead,
 # just be floating around in the global environment.
 
-# The problem is that R evaluates the arguments to functions immediately. So,
-# right away, that function is run and the answer, 16, is produced. Then, 16 is
-# copied 1,000 times when we try to run our experiment 1,000 times.
+# The problem, as Cassandra points out, is that R evaluates the arguments to
+# functions immediately. So, right away, that function is run and the answer,
+# 16, is produced. Then, 16 is copied 1,000 times when we try to run our
+# experiment 1,000 times.
 
 # We are able to avoid this currently because, instead of passing in the full
 # function call, we pass in the name of the function and the arguments
 # separately. So, R can't evaluate them until we are in the middle of running
-# the 1,000 experiments. This is not a bad approach, but it also is not as
-# flexible as I want it to be. (But continuing on this path may be the best
-# approach.)
+# the 1,000 experiments, when we combine FUN(data) and so on. This is not a bad
+# approach, but it also is not as flexible as I want it to be. (But continuing
+# on this path may be the best approach.)
 
-# The other approach is to delay the evaluation of the full call somehow. But I
-# can't figure out how.
+# The other approach is to delay the evaluation of the full call somehow. I
+# don't want it to run until we are within map_dbl(). But I can't figure out
+# how.
 
-# Here are some notes on our current problem. First, consider some quotes from
-# Advanced R:
-
-# "Each time a function is called, a new environment is created to host
-# execution. This is called the execution environment, and its parent is the
-# function environment."
-
-# "An execution environment is usually ephemeral; once the function has
-# completed, the environment will be garbage collected."
-
-# "This happens because every time a function is called a new environment is
-# created to host its execution. This means that a function has no way to tell
-# what happened the last time it was run; each invocation is completely
-# independent."
-
-# The issue seems to be that, when map_dbl() and other functions are executed
-# within another function, we don't get the natural change in the random seed
-# which we would expect. This works great:
-
-# map_dbl(.x = 1:5, .f = ~ runif(1))
-# [1] 0.4758260 0.1840778 0.4199492 0.5779564 0.8983577
-
-# This does not!
-
-# my_func <- function(FUN){map_dbl(.x = 1:5, .f = ~ FUN)}
-# my_func(runif(1))
-# [1] 0.7555603 0.7555603 0.7555603 0.7555603 0.7555603
-
-# Argg! That is no good. It is as if the environment which is created for each
-# call to runif() within the map_dbl() gets deleted before R "knows" to evolve
-# the random seed.
-
-# Note that even using rerun --- as we do in the code below --- does not work by
-# itself.
-
-# my_func <- function(FUN){unlist(rerun(.n = 5,  FUN))}
-# > my_func(runif(1))
-# [1] 0.7477465 0.7477465 0.7477465 0.7477465 0.7477465
-
-# So it seems like FUN(data, ...) --- as in the code below --- is key. My guess
-# is that the presence of the data argument forces R to "notify" itself that it
-# is making a call --- to sample() in the case of the current code --- which then
-# causes the random seed to evolve, which leads to 5 different answers.
-
-# More comments:
+# Not sure if this is helpful:
 
 # Quote from here: https://adv-r.hadley.nz/functionals.html#passing-arguments
 
@@ -100,13 +58,16 @@
 # > [1] 0.903 0.132 0.629 0.945
 
 # That is fine. But, again, once I try to put this in a function with a FUN
-# argument and then pass in runif(1), it does not work. 
+# argument and then pass in runif(1), it does not work.
 
-# Cassandra's insight is that, as soon as you call the function --- or as soon
-# as it gets to FUN and tries to stick the function in there --- it evaluates
-# the function, gets back the value 0.2, and then just sticks that value in the
-# code. Something like ~ 0.2 just gives you back 0.2. So, we need to delay the
-# evaluation of the function call that we are passing in.
+# Maybe something like:
+
+# my.call <- call("sample", x = c(1:10), size = 1); eval(my.call); eval(my.call)
+
+# is what we need. Use call() and the ... arguments to build a function call.
+# This is held fixed until we get down to the map_dbl() function and, at that
+# point, it is run 1,000 times. But I can't get this to work within map_dbl! I
+# can, however, get it to work like: replicate(n = 2, eval(my.call))
 
 play <- function(data, n, guess_1, guess_2, FUN, ...){
   
@@ -120,11 +81,11 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
   
   # First, how do we deal with the specific names of the variables we are
   # working with? That is, data should be a tibble with x and y and whatever.
-  # But, right now, we are just passing in the name of the tibble. We don't
-  # mention the variable names. The function (FUN) argument is just something
-  # like sample. But we don't know which column in "data" the function "sample"
-  # should be applied to. For now, only allow you to pass in a vector. Must be a
-  # better way!
+  # But, right now, we are just passing in the name of the tibble (or, actually,
+  # vector right now). We don't mention the variable names. The function (FUN)
+  # argument is just something like sample. But we don't know which column in
+  # "data" the function "sample" should be applied to. For now, only allow you
+  # to pass in a vector. Must be a better way!
   
   # Second, how to handle complex functions, especially ones that take
   # arguments. Right now, we use ... which works fine in these simple cases. But
@@ -132,7 +93,7 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
   # would like FUN to be able to be a chain of pipes . . .
   
   # For now, as long as data is a vector and FUN works on vectors, everything
-  # should work as advertized. Then, for Tidyverse standards, data (since it is
+  # should work as advertised. Then, for Tidyverse standards, data (since it is
   # a vector) should be renamed x.
 
   # Next version, data should be (or at least allowed to be) a tibble and then
@@ -140,10 +101,15 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
   # OK! Probably no need to allow someone to pass in a vector. Or maybe they can
   # pass in anything which works in their function . . .
   
-  # Or maybe we should not have a separate data argument. Instead, we know that
-  # the data will exist in the environment when they run play(). Will play()
-  # find it if we allow them to pass in a full expression like median(data$x)?
-  # That would be hacky, but, perhaps, easy. 
+  # Perhaps a reasonable next step would be to pass in two arguments, a tibble
+  # tb and a variable x. Then, FUN will act on that vector. 
+  
+  # Or maybe we should not even have a separate data argument. Instead, we know
+  # that the data will exist in the environment when they run play(). Will
+  # play() find it if we allow them to pass in a full expression like
+  # median(data$x)? That would be hacky, but, perhaps, easy.
+  
+  # But then we would still have the problem of R wanting to evaluate 
   
   # Alas, although it "works" in that the function can find that data, it seems
   # like, each time it does, the random seed gets reset (because you are
