@@ -24,6 +24,13 @@
 # = FALSE))" where the tibble tbl could also be passed in or could, instead,
 # just be floating around in the global environment.
 
+# Maybe the trick is to pass them in as formula objects by simply putting a ~ in
+# front? Eureka!
+
+# > my_func <- function(FUN){map_dbl(.x = 1:5, .f = FUN)}
+# > my_func(~ runif(1))
+# [1] 0.3231914 0.3751303 0.7335148 0.1857348 0.2345344
+
 # The problem, as Cassandra points out, is that R evaluates the arguments to
 # functions immediately. So, right away, that function is run and the answer,
 # 16, is produced. Then, 16 is copied 1,000 times when we try to run our
@@ -32,12 +39,12 @@
 # We are able to avoid this currently because, instead of passing in the full
 # function call, we pass in the name of the function and the arguments
 # separately. So, R can't evaluate them until we are in the middle of running
-# the 1,000 experiments, when we combine FUN(data) and so on. This is not a bad
-# approach, but it also is not as flexible as I want it to be. (But continuing
-# on this path may be the best approach.)
+# the 1,000 experiments, when we combine FUN(data, ...) and so on. This is not a
+# bad approach, but it also is not as flexible as I want it to be. (But
+# continuing down this path may be the best approach.)
 
 # The other approach is to delay the evaluation of the full call somehow. I
-# don't want it to run until we are within map_dbl(). But I can't figure out
+# don't want it to run until we are within replicate(). But I can't figure out
 # how.
 
 # Not sure if this is helpful:
@@ -62,12 +69,12 @@
 
 # Maybe something like:
 
-# my.call <- call("sample", x = c(1:10), size = 1); eval(my.call); eval(my.call)
+# my.call <- call("sample", x = c(1:10), size = 1); replicate(2, eval(my.call))
 
 # is what we need. Use call() and the ... arguments to build a function call.
-# This is held fixed until we get down to the map_dbl() function and, at that
-# point, it is run 1,000 times. But I can't get this to work within map_dbl! I
-# can, however, get it to work like: replicate(n = 2, eval(my.call))
+# This is held fixed until we get down to the replicate() function and, at that
+# point, it is run 1,000 times. I can't get this to work within map_dbl, but
+# maybe replicate(), as above, is fine.
 
 play <- function(data, n, guess_1, guess_2, FUN, ...){
   
@@ -93,8 +100,8 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
   # would like FUN to be able to be a chain of pipes . . .
   
   # For now, as long as data is a vector and FUN works on vectors, everything
-  # should work as advertised. Then, for Tidyverse standards, data (since it is
-  # a vector) should be renamed x.
+  # should work as advertised. Of course, then, for Tidyverse standards, data
+  # (since it is a vector) should be renamed x.
 
   # Next version, data should be (or at least allowed to be) a tibble and then
   # this won't work (unless we check for the two cases explicitly). And that is
@@ -102,26 +109,16 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
   # pass in anything which works in their function . . .
   
   # Perhaps a reasonable next step would be to pass in two arguments, a tibble
-  # tb and a variable x. Then, FUN will act on that vector. 
+  # tb and a variable x. Then, FUN will act on that vector. Might using that
+  # help ensure that the function is not evaluated until we are in replicate()?
   
   # Or maybe we should not even have a separate data argument. Instead, we know
   # that the data will exist in the environment when they run play(). Will
   # play() find it if we allow them to pass in a full expression like
   # median(data$x)? That would be hacky, but, perhaps, easy.
   
-  # But then we would still have the problem of R wanting to evaluate 
-  
-  # Alas, although it "works" in that the function can find that data, it seems
-  # like, each time it does, the random seed gets reset (because you are
-  # "jumping" out of the functions environment?) and, so, you get the same
-  # sample each time. So, I think we have to pass the data in somehow.
-  
-  # Or, actually, this issue of no-randomness seems to be caused by something
-  # other than the passing in of data with the function call.
-  
-  # Something like map_dbl(1:{{n}}, ~ FUN) seens to work OK, but we need a way
-  # for FUN to refer to stuff in the local environment only, except for the
-  # no-randomness.
+  # But then we would still have the problem of R wanting to evaluate it
+  # immediately. So, maybe that is a fundamentaly flawed approach?
   
   # Maybe this should be a Shiny app? Would then need to pre-load all the data
   # sets we care about.
@@ -147,10 +144,7 @@ play <- function(data, n, guess_1, guess_2, FUN, ...){
     # I want something like map_dbl(1:{{n}}, ~ FUN({{data}}, ...)) to work in
     # the next line. But I can't quite figure out why . . .
     
-    # Maybe call() is what I need? Treat the FUN which is passed in (and the
-    # dot, dot, dot arguments) as something which needs to be turned into a call
-    # object. Then, we can evaluate that call object within rerun or map_dbl or
-    # whatever.
+    # See above for the call() approach. I think that this is a good approach.
   
     # I think that this section is key:
   
