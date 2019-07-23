@@ -8,12 +8,9 @@
 #'
 #' @return A tibble with the results of the game.
 #'
-#' @importFrom dplyr mutate
-#' @importFrom dplyr case_when
+#' @importFrom dplyr mutate case_when near
 #' @importFrom purrr map_dbl
-#' @importFrom purrr rerun
-#' @importFrom rlang is_scalar_double
-#' @importFrom rlang is_formula
+#' @importFrom rlang is_scalar_double is_formula
 #'
 #' @export
 #'
@@ -34,9 +31,6 @@ play <- function(n, guess_1, guess_2, formula){
   stopifnot(is_scalar_double(guess_2))
   stopifnot(is_formula(formula))
   
-  # Maybe this should be a Shiny app? Would then need to pre-load all the data
-  # sets we care about.
-  # 
   # We should not need to calculate an empty tibble at the start. Instead, we
   # should be using map_df() (or something like it) which will produce a tibble
   # automatically.

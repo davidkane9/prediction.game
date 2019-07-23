@@ -63,3 +63,6 @@ Should we connect all this to bootstrapping? What we have, implicitly (?), is a 
 Should we connect all this to the concept to cross-validation? That is, the same (sort of?) framework as what we have here --- lots of experiments, each using a different sample of the data --- is like cross-validation. Instead of taking a sample, you divide the data into 10 sets training and test data, run the two competing processes each on the training, and then compare how they do on the test.
 
 Do we need to allow the guesses to be formulas? Not today. Calculate your guess however you want, using whatever statistical tricks you want. But, at that point, your guess is just as number, as is mine, and we are going to see who wins. Any randomness comes from the formula.
+
+Maybe this should be a Shiny app? Would then need to pre-load all the data sets we care about.
+
