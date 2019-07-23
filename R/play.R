@@ -13,6 +13,7 @@
 #' @importFrom purrr map_dbl
 #' @importFrom purrr rerun
 #' @importFrom rlang is_scalar_double
+#' @importFrom rlang is_formula
 #'
 #' @export
 #'
@@ -24,20 +25,14 @@
 #'           ~ mean(sample(mtcars$mpg, size = 10, replace = FALSE)))
 #' table(z$winner)
 
-# I am not even sure I understand this second example! I would have guessed that
-# the best guess is 20.09, which is the result of mean(mtcars$mpg). But not
-# quite! A lower number is better because there is a bit of a right skew to mpg,
-# resulting in the median being lower than the mean. But the simple median is
-# not the best guess either. Best is a number somewhere in between the mean and
-# the median. Tricky! Presumably, if size were 1, then the median would be best
-# and if size were 32 (entire data set), then the mean would be best . . .
-
-
 play <- function(n, guess_1, guess_2, formula){
   
   # Need more argument error checking and at least a few test cases.
   
   stopifnot(is_scalar_double(n))
+  stopifnot(is_scalar_double(guess_1))
+  stopifnot(is_scalar_double(guess_2))
+  stopifnot(is_formula(formula))
   
   # Maybe this should be a Shiny app? Would then need to pre-load all the data
   # sets we care about.
