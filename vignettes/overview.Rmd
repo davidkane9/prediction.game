@@ -36,7 +36,7 @@ play(n = 1000, guess_1 = 20.1, guess_2 = 19.2, formula = ~ mean(sample(mtcars$mp
   count(winner)
 ```
 
-**guess_1** wins them all. This is unsurprising since all 1,000 experiments produce the same value, which is the mean. Things get more interesting when we sample somewhere between 1 and 32.
+**guess_1** wins them all. This is unsurprising since all 1,000 experiments produce the same value, which is the mean. Things get more interesting when we sample somewhere between 1 and 32 observations.
 
 ```{r}
 play(n = 1000, guess_1 = 20.1, guess_2 = 19.2, formula = ~ mean(sample(mtcars$mpg, size = 5))) %>% 
@@ -49,7 +49,7 @@ Interesting. If the prediction game involves just sampling one value, the median
 
 Need a function, show(), which takes, via %>%, the result of play() and creates a cool animation using d3rain.
 
-The loss function which decides which guess wins is very limitted. First, it requires that the formula return a single value with which it can compare the guesses. Do I need to fix this? Soon? Second, the loss function is currently hard-coded as absolute value of the differences.
+The loss function which decides which guess wins is very limitted. First, it requires that the formula return a single value to which it can compare the guesses. Do I need to fix this? Soon? Second, the loss function is currently hard-coded as absolute value of the differences.
 
 We want to generalize this somehow by considering one guess to be better than another, not just because it wins a majority of distinct contests, but instead because the sum of some increasing function of its errors is smaller. For example, the median is a better guess if we are considering a sum of absolute errors while the mean is better for the sum of squared errors. How can we implement that case? I think we would need to allow the formula to return a vector. And then ensure that the loss function can deal with a vector. Is that really so hard? Want to be able to pass in a loss function . . .
 

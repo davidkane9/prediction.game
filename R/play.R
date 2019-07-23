@@ -61,20 +61,33 @@ play <- function(n, guess_1, guess_2, formula){
     
     mutate(answer = map_dbl(.x = 1:{{n}}, .f = formula)) %>% 
     
+    # Need to use dplyr::near() for the third case below, and then put it first
+    # so that cases that are essentially ties get called as such.
+    
+    # Should not be hard to generalize this to the case where answer is a
+    # vector. First, we need to do something different than map_dbl(), probably
+    # map_df(). Or maybe just map() which would give me a list. Then, we can
+    # apply a function (called "loss" and passed in by the user) which takes two
+    # scalars (the guesses), a list (from formula), and then returns the winner
+    # (or a tie). This loss function should be able to handle formulas which
+    # returns lists of length 1 so that we can replicate our current examples.
+    
+    # Need to think about the mechanics of defining loss and passing it in.
+    
     mutate(winner = case_when(
        abs(guess_1 - answer) <  abs(guess_2 - answer) ~ "guess_1",
        abs(guess_1 - answer) >  abs(guess_2 - answer) ~ "guess_2",
        abs(guess_1 - answer) == abs(guess_2 - answer) ~ "tie"))
   
   
-  # Output will be a tibble with n rows, one for each run of the experiment.
-  # Plan is to pass that tibble on to a new function, using nice Tidyverse
-  # chaining, which will display the result in some pleasing fashion. Check out
-  # the d3rain package. Maybe the argument will be called show()? A dual column
-  # histogram that fills over time would be cool!
-  # 
-  # Do we really need entire columns with guess_1 and guess_2 repeated n times?
-  # Probably not!
+    # Output will be a tibble with n rows, one for each run of the experiment.
+    # Plan is to pass that tibble on to a new function, using nice Tidyverse
+    # chaining, which will display the result in some pleasing fashion. Check out
+    # the d3rain package. Maybe the argument will be called show()? A dual column
+    # histogram that fills over time would be cool!
+    # 
+    # Do we really need entire columns with guess_1 and guess_2 repeated n times?
+    # Probably not!
   
   invisible(x)
 }
