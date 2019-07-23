@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
 
 The purpose of this vignette is to provide an overview of the **prediction.game** package. I will also intersperse notes about future plans, for the reference of both potential collaborators and myself.
 
-The only function is *play()* which allows for playing of the "prediction game," especially in class. Imagine that we are having a contest to determine who can come up with a number which is closest to a random draw from the *mpg* variable in the *mtcars* data frame. (There are `r length(mtcars$mpg)`  values for *mpg*, with a mean of `r round(mean(mtcars$mpg), 1)`.) 
+The only function is *play()* which allows for playing the "prediction game," especially in class. Imagine that we are having a contest to determine who can come up with a number which is closest to a random draw from the *mpg* variable in the *mtcars* data frame. (There are `r length(mtcars$mpg)`  values for *mpg*, with a mean of `r round(mean(mtcars$mpg), 1)`.) 
 
 ```{r setup}
 suppressMessages(library(tidyverse))
@@ -43,7 +43,12 @@ play(n = 1000, guess_1 = 20.1, guess_2 = 19.2, formula = ~ mean(sample(mtcars$mp
   count(winner)
 ```
 
-Interesting. If the prediction game involves just sampling one value, the median is better. If we sample them all, the mean is (obviously) best. But, if we are taking the average of a sample of size 5, the mean is better, although not by much.
+Interesting. If the prediction game involves just sampling one value, the median is better. If we sample them all, the mean is (obviously) best. But, if we are taking the average of a sample of size 5, the mean is better, although not by much. If, instead of taking a sample of size 5, we shrink it to size 2, the median is a better guess.
+
+```{r}
+play(n = 1000, guess_1 = 20.1, guess_2 = 19.2, formula = ~ mean(sample(mtcars$mpg, size = 2))) %>% 
+  count(winner)
+```
 
 ## Keep in Mind
 
