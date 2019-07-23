@@ -50,9 +50,6 @@ play <- function(n, guess_1, guess_2, formula){
     
     mutate(answer = map_dbl(.x = 1:{{n}}, .f = formula)) %>% 
     
-    # Need to use dplyr::near() for the third case below, and then put it first
-    # so that cases that are essentially ties get called as such.
-    
     # Should not be hard to generalize this to the case where answer is a
     # vector. First, we need to do something different than map_dbl(), probably
     # map_df(). Or maybe just map() which would give me a list. Then, we can
@@ -64,9 +61,9 @@ play <- function(n, guess_1, guess_2, formula){
     # Need to think about the mechanics of defining loss and passing it in.
     
     mutate(winner = case_when(
+       near(abs(guess_1 - answer), abs(guess_2 - answer)) ~ "tie", 
        abs(guess_1 - answer) <  abs(guess_2 - answer) ~ "guess_1",
-       abs(guess_1 - answer) >  abs(guess_2 - answer) ~ "guess_2",
-       abs(guess_1 - answer) == abs(guess_2 - answer) ~ "tie"))
+       abs(guess_1 - answer) >  abs(guess_2 - answer) ~ "guess_2"))
   
   
     # Output will be a tibble with n rows, one for each run of the experiment.
